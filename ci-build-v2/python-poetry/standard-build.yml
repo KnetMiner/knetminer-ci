@@ -69,20 +69,20 @@ jobs:
 
     steps:
     - name: Code checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: "3.11"
 
     - name: Set up Poetry
-      uses: Gr1N/setup-poetry@v8
+      uses: Gr1N/setup-poetry@v9
       with:
         poetry-version: "2.3.2"      
       
     - name: Cache for Poetry Virtualenvs
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
@@ -108,7 +108,7 @@ jobs:
         GIT_USER: ${{github.actor}}
         GIT_PASSWORD: ${{github.GITHUB_TOKEN}}
 
-        # Also used during releasing by the GH client, to create a new release on the repo
+        # Used during releasing by the GH client, to create a new release on the repo
         # TODO: what's the difference with github.GITHUB_TOKEN ?
         GH_TOKEN: ${{ github.token }}        
 
@@ -120,6 +120,10 @@ jobs:
         # When using act, you need to set this somewhere like a secrets file. If set, it should 
         # be 'true' or 'false'. I couldn't find any other way to detect 'act'.
         CI_IS_ACT_TOOL: ${{ secrets.CI_IS_ACT_TOOL }}
+        # If CI_IS_ACT_TOOL is set, then the common scripts will set GIT_PASSWORD to this value,
+        # which should come from the secrets passed to act. This is because act doesn't support
+        # GITHUB_TOKEN.
+        GH_TOKEN: ${{secrets.GITHUB_PAT}}
 
         # A list of branches to be used for deploying or release operations. If this worflow is
         # run against a branch not listed here, deployment operations (eg, PyPI/Maven publishing)
@@ -128,6 +132,8 @@ jobs:
         # (see above).
         CI_DEPLOY_BRANCHES: ${{ secrets.CI_DEPLOY_BRANCHES }}
       
-      # We reuse the general CI scripts in knetminer-ci, see https://github.com/KnetMiner/knetminer-ci  
+      # We reuse the general CI scripts in knetminer-ci, see https://github.com/KnetMiner/knetminer-ci
+      # As per documentation, the framework client defines this script in the desired flavour directory,
+      # the script downloads/runs the installation script and then starts the build.
       run: 
         ./ci-build-v2/python-poetry/build.sh
