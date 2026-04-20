@@ -1,0 +1,29 @@
+<settings 
+	xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd"
+>
+  <servers>
+    
+		<!--
+			This is what the scripts in _common.sh use with Maven commands. If you want to reuse 
+			this same file you've to use the same <id>s below in your pom.xml and you'll have 
+			to setup the CI_* secrets in your github account.
+		-->
+
+    <server>
+			<id>maven-repo-snapshots</id>
+			<!-- This is to be set in your OS or CI system -->
+      <username>${env.CI_MAVEN_REPO_USER}</username>
+      <password>${env.CI_MAVEN_REPO_PASSWORD}</password>
+	  </server>
+
+    <server>
+			<id>maven-repo-releases</id>
+      <username>${env.CI_MAVEN_REPO_USER}</username>
+      <password>${env.CI_MAVEN_REPO_PASSWORD}</password>
+	  </server>
+    
+  </servers>
+  
+</settings>

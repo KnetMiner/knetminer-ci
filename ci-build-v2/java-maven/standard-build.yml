@@ -1,0 +1,78 @@
+name: Standard Build
+
+# ======> ***TO BE REVIEWED*** see notes in TODO.md
+#
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      # Set BOTH when you want to trigger a new release. The build script will 
+      # switch Maven to the new release, deploy, tag git, move Maven to the new snapshot
+      NEW_RELEASE_VER:
+        description: "New Release Version"
+        required: false
+      NEW_SNAPSHOT_VER:
+        description: "New Snapshot Version"
+        required: false
+      IS_LATEST_RELEASE:
+        description: "When releasing, tells if it's a github latest release. Ignored otherwise."
+        required: false
+        default: "true"
+      IS_PRE_RELEASE:
+        description: "When releasing, tells if it's a github pre-release. Ignored otherwise."
+        required: false
+        default: "false"
+        
+  # You should use this (instead of push) for large, time and resource-consuming codebases.
+  # build.sh uses CI_SCHEDULE_PERIOD to decide if there has been changes recently that actually need
+  # a rebuild.
+  #  
+  # schedule:
+  #  m h d M wd(MON-SUN), times are in UTC
+  # - cron: "0 10 * * *"
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Code checkout
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 21
+        settings-path: ${{ github.workspace }} # location for the settings.xml file
+  
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build
+      env:
+        CI_MAVEN_REPO_USER: ${{secrets.CI_MAVEN_REPO_USER}}
+        CI_MAVEN_REPO_PASSWORD: ${{secrets.CI_MAVEN_REPO_PASSWORD}}
+        GIT_USER: ${{github.actor}}
+        GIT_PASSWORD: ${{github.GITHUB_TOKEN}}
+        GIT_USER_EMAIL: ${{secrets.GIT_USER_EMAIL}}
+        CI_SLACK_API_NOTIFICATION_URL: ${{secrets.CI_SLACK_API_NOTIFICATION_URL}}
+        CI_NEW_RELEASE_VER: ${{github.event.inputs.NEW_RELEASE_VER}}
+        CI_NEW_SNAPSHOT_VER: ${{github.event.inputs.NEW_SNAPSHOT_VER}}
+        CI_IS_LATEST_RELEASE: ${{github.event.inputs.IS_LATEST_RELEASE}}
+        CI_IS_PRE_RELEASE: ${{github.event.inputs.IS_PRE_RELEASE}}
+        # You might need it to let the CI scripts decide upon schedule vs push
+        CI_TRIGGERING_EVENT: ${{github.event_name}}
+        # This is only set when using the act tool
+        CI_IS_ACT_TOOL: ${{ secrets.CI_IS_ACT_TOOL }}
+        # This also can be passed from act CLI
+        CI_DEPLOY_BRANCHES: ${{ secrets.CI_DEPLOY_BRANCHES }}
+        
+      run: ci-build-v2/java-maven/build-self.sh
