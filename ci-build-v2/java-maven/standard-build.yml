@@ -56,6 +56,14 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
+    # See knetminer-ci docs for a list of secrets and other variables we use.
+    # As explained there, prefer action's SHA to the version
+    #
+    - name: Forward all GH secrets to env
+      uses: oNaiPs/secrets-to-env-action@75f319b3c8c926ac2eabcca34daa6cf531daf32f # 1.8
+      with:
+        secrets: ${{ toJSON(secrets) }}
+
     - name: Build
       env:
         # Parameters to trigger a new release (see above)
@@ -63,17 +71,6 @@ jobs:
         CI_NEW_SNAPSHOT_VER: ${{github.event.inputs.NEW_SNAPSHOT_VER}}
         CI_IS_LATEST_RELEASE: ${{github.event.inputs.IS_LATEST_RELEASE}}
         CI_IS_PRE_RELEASE: ${{github.event.inputs.IS_PRE_RELEASE}}
-
-        # These are used in java-maven/maven-settings.xml
-        CI_MAVEN_REPO_USER: ${{secrets.CI_MAVEN_REPO_USER}}
-        CI_MAVEN_REPO_PASSWORD: ${{secrets.CI_MAVEN_REPO_PASSWORD}}
-
-        # This allows for the CI to notify failures to Slack, see _common.sh
-        CI_SLACK_API_NOTIFICATION_URL: ${{secrets.CI_SLACK_API_NOTIFICATION_URL}}
-
-        # Set it up with yours, used with auto-commits
-        # TODO: is this automatically available from some GHA vars?
-        GIT_USER_EMAIL: ${{secrets.GIT_USER_EMAIL}}
 
         # These are usually auto-provided by GHA and you shouldn't need to change them
         GIT_USER: ${{github.actor}}
@@ -86,23 +83,6 @@ jobs:
         # What started this WF, as per GHA documentation. Scripts might use this to decide what
         # todo, eg, if a build was triggered by a push or a schedule.
         CI_TRIGGERING_EVENT: ${{github.event_name}}
-        
-        # This is only set when using the act tool, to tell certain script functions to behave 
-        # differently than usually (eg, some extra packages need to be installed on a act runner)
-        # When using act, you need to set this somewhere like a secrets file. If set, it should 
-        # be 'true' or 'false'. I couldn't find any other way to detect 'act'.
-        CI_IS_ACT_TOOL: ${{ secrets.CI_IS_ACT_TOOL }}
-        # If CI_IS_ACT_TOOL is set, then the common scripts will set GIT_PASSWORD to this value,
-        # which should come from the secrets passed to act. This is because act doesn't support
-        # GITHUB_TOKEN.
-        GH_TOKEN: ${{secrets.GITHUB_PAT}}
-
-        # A list of branches to be used for deploying or release operations. If this worflow is
-        # run against a branch not listed here, deployment operations (eg, PyPI/Maven publishing)
-        # will be skipped and releasing will be blocked with an error.
-        # Note that you can exclude a branch from running a CI build using the GHA 'branches' option
-        # (see above).
-        CI_DEPLOY_BRANCHES: ${{ secrets.CI_DEPLOY_BRANCHES }}
         
       # We reuse the general CI scripts in knetminer-ci, see https://github.com/KnetMiner/knetminer-ci
       # As per documentation, the framework client defines this script in the desired flavour directory,
