@@ -21,7 +21,6 @@
 * Finish things above, document usage, etc
 * Start using it and possibly (ahah! :-) ) fix incoming issues
 
-
 ## ~~Plan to go back to main~~
 
 **DEPRECATED**: we migrated to the hereby repo, we won't use the old one any more, just add a deprecation note in it and close the branch we have migrated from.
@@ -32,3 +31,6 @@
 * Release
 * Update consumer projects with a URL that links to a stable version
 
+## Improvements
+
+* Functions like `stage_deploy()` should pass the deploy mode check to its extensions. Problem is it can't just return 1/false, cause this is confused with an actual failure. A possible solution is to adopt the convention to print "skip" as last operation, but then we need to redirect all the diagnostics to stderr.

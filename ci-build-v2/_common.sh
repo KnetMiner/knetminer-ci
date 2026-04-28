@@ -155,7 +155,7 @@ function release_commit_new_snapshot
 {
 	printf "== Committing ${CI_NEW_SNAPSHOT_VER} to git\n"
 	
-	git commit -a --allow-empty -m "Switching version to ${CI_NEW_SNAPSHOT_VER}. ${CI_SKIP_TAG}"
+	git commit -a --allow-empty -m "release: switch to new dev version ${CI_NEW_SNAPSHOT_VER}. ${CI_SKIP_TAG}"
 	export CI_NEEDS_PUSH=true
 }
 
@@ -289,19 +289,25 @@ You CAN'T get GIT_PASSWORD from:
 
 you can add this to the above definition in the env section of your Action workflow:
 
-  ACT_GIT_PASSWORD: ${{secrets.GITHUB_PAT}}
+  ACT_GIT_PASSWORD: ${{secrets.ACT_GIT_PASSWORD}}
 
-and define GITHUB_PAT in the secrets file you pass to the act tool.
+and define ACT_GIT_PASSWORD in the secrets file you pass to the act tool. Usually, this
+is a GH personal access token (PAT).
 
 Continuing without a git password.
 
 EOT
   
 		fi 
-		GIT_PASSWORD="$ACT_GIT_PASSWORD"
+		export GIT_PASSWORD="$ACT_GIT_PASSWORD"
 	fi
 	
-	# PRs are checked out in detach mode, so they haven't any branch, so checking if this is != master
+	if [[ -z "$GH_TOKEN" ]]; then
+		printf "== GH_TOKEN is empty, setting it to GIT_PASSWORD, hope it will work\n"
+		export GH_TOKEN="$GIT_PASSWORD"
+	fi
+
+	# PRs are checked out in detach mode, so they haven't any branch, so checking if this is != main
 	# filters them away too
 	export CI_GIT_BRANCH=$(git branch --show-current)
 	
@@ -310,7 +316,7 @@ EOT
 	# pull requests.
 	# 
 	[[ ! -z "$CI_DEPLOY_BRANCHES" ]] \
-		|| export CI_DEPLOY_BRANCHES='master main ci-build-v2' # A list of branches, separated by spaces
+		|| export CI_DEPLOY_BRANCHES='master main' # A list of branches, separated by spaces
 	
 	# This is used in stages like remote_git_update(), if some previous stage set it to true, 
 	# then it's known that we need to push local changes back to the remote git repo.
@@ -431,8 +437,8 @@ function validate_preconditions
 
 
 # As said above, this run a stage named like name=$1, by calling stage_$name_local(), 
-# if it exists, stage_${name}() otherwise. As explained stage_${name}() is usually
-# implemented by a particular flavour of this commons scripts project.
+# if it exists, stage_${name}() otherwise. As explained, stage_${name}() is usually
+# implemented by a particular flavour of this common scripts project.
 # 
 function run_stage
 {

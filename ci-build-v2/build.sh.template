@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# A template foe the build.sh script, which a dependant project should use as bootstrap.
+# A template for the build.sh script, which a dependant project should use as bootstrap.
 # The build.sh script is the entry point for the build workflow, you should place this in your 
 # project, under <repo-root>/ci-build-v2/build.sh, edit it to suit your needs and then call it from
 # the github Actions workflow, using the appropriate arguments.
 
 set -eE -o pipefail
 
-# The script should the following:
+# The script should do the following:
 
 # Override any stage you need to customise with respect to the default implementation available for 
 # your target flavour. Or, does nothing if you're fine with the defaults
@@ -21,13 +21,16 @@ function stage_build_setup_local
 printf "== Installing ci-build scripts and then running the build\n"
 
 # You can point to a particular release tag or branch at our repo
-# WARNING: DON'T leave download the generic head of the master or other branch, you should rely on
-# a stable release
-ci_build_url_base="https://raw.githubusercontent.com/KnetMiner/knetminer-ci/refs/heads/ci-build-v2"
+# WARNING: DO USE a version tag, DO MAKE your builds predictable and stable.
+# So, prefer this:
+ci_build_url_base="https://raw.githubusercontent.com/KnetMiner/knetminer-ci/refs/tags/1.0"
+# To this:
+# ci_build_url_base="https://raw.githubusercontent.com/KnetMiner/knetminer-ci/refs/heads/ci-build-v2"
 script_url="$ci_build_url_base/ci-build-v2/install.sh"
 
-# install.sh takes the URL base to our own repository, and the flavour (eg, java-maven, python-poetry) you
-# want to use to build your project. Details in the script itself.
-. <(curl --fail-with-body -o - "$script_url") "$ci_build_url_base" python-poetry
+# install.sh takes the URL base to our own repository, and the flavour you want to use to build your
+# project (eg, java-maven, python-poetry). Details in the script itself.
+. <(curl --fail-with-body -o - "") "$ci_build_url_base" python-poetry
 
+# And once you have everything in place, you can eventually start the game
 main
