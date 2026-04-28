@@ -1,13 +1,12 @@
 name: Standard Build
 
-# ======> ***TO BE REVIEWED*** see notes in TODO.md
-#
-
 on:
   push:
   workflow_dispatch:
     inputs:
-      # Set BOTH when you want to trigger a new release. The build script will 
+      # These are available when you trigger a workflow, as parameters.
+      #
+      # Set BOTH when you want to trigger a new release. The build script will 
       # switch Maven to the new release, deploy, tag git, move Maven to the new snapshot
       NEW_RELEASE_VER:
         description: "New Release Version"
@@ -31,6 +30,10 @@ on:
   # schedule:
   #  m h d M wd(MON-SUN), times are in UTC
   # - cron: "0 10 * * *"
+
+permissions:
+  # Needed to push and when the repo belongs to an organisation.
+  contents: write
 
 
 jobs:
@@ -56,13 +59,13 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    # See knetminer-ci docs for a list of secrets and other variables we use.
-    # As explained there, prefer action's SHA to the version
-    #
-    - name: Forward all GH secrets to env
-      uses: oNaiPs/secrets-to-env-action@75f319b3c8c926ac2eabcca34daa6cf531daf32f # 1.8
-      with:
-        secrets: ${{ toJSON(secrets) }}
+    # See the knetminer-ci documentation for details
+    - name: Forward secrets to env vars
+      env:
+        _SECRETS_JS_STR: ${{ toJSON(secrets) }}
+      run: |
+        # Using -c (compact) ensures the JSON is treated as a single line
+        echo "$_SECRETS_JS_STR" | jq -r 'to_entries[] | "\(.key)<<EOF\n\(.value)\nEOF"' >> $GITHUB_ENV    
 
     - name: Build
       env:
@@ -75,10 +78,6 @@ jobs:
         # These are usually auto-provided by GHA and you shouldn't need to change them
         GIT_USER: ${{github.actor}}
         GIT_PASSWORD: ${{github.GITHUB_TOKEN}}
-
-        # Used during releasing by the GH client, to create a new release on the repo
-        # TODO: what's the difference with github.GITHUB_TOKEN ?
-        GH_TOKEN: ${{ github.token }}
 
         # What started this WF, as per GHA documentation. Scripts might use this to decide what
         # todo, eg, if a build was triggered by a push or a schedule.
