@@ -2,8 +2,12 @@
 
 *This file was last reviewed on 2026-06-02.* **Please, keep this note updated.**
 
-## 2.0-SNAPSHOT
+## 1.2.1-SNAPSHOT
 * Current dev version
+
+
+## 1.2
+* `--durations=0` added to pytest command, to show the duration of the slowest tests.
 
 
 ## 1.1

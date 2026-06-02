@@ -35,7 +35,7 @@ function stage_build
 	poetry $CI_POETRY_DEFAULT_ARGS sync
 
 	printf "== Tests\n"
-	poetry run $CI_POETRY_DEFAULT_ARGS -- pytest
+	poetry run $CI_POETRY_DEFAULT_ARGS -- pytest --durations=0
 }
 
 # See the generic version in ../_common.sh for details on how this stage should work.
