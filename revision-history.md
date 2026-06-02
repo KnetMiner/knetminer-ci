@@ -2,7 +2,7 @@
 
 *This file was last reviewed on 2026-06-02.* **Please, keep this note updated.**
 
-## 2.0-SNAPHSOT
+## 2.0-SNAPSHOT
 * Current dev version
 
 
