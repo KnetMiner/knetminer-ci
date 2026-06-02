@@ -4,7 +4,7 @@
 # more realistic examples, you should look at the `standard-build.yml` within your build flavour
 # of choice, e.g. `python-poetry/standard-build.yml`.
 
-name: CI Build
+name: CI Framework Build
 
 on:
   # push:
