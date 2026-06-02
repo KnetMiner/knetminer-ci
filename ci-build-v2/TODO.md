@@ -19,7 +19,7 @@
 ## Plan to complete the migration to the new repo
 
 * Finish things above, document usage, etc
-* Start using it and possibly (ahah! :-) ) fix incoming issues
+* Start using it and possibly (ahah! :-) ), fix incoming issues
 
 ## ~~Plan to go back to main~~
 

@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-# This is downloaded and executed by your project's build.sh.
-# As a bootstrap script, it loads whatever is necessary from our repository.
+# This should be downloaded and executed by your project's build.sh.
+# As a bootstrap script, it loads whatever is necessary from our CI repository.
 #
 # Note that files are downloaded only if they don't exist locally, eg, our java-maven/maven-settings.xml is not
 # downloaded if it already exists. This allows for overriding our defaults.
-# WARNING: this IS NOT very useful with files like _common.sh, since you will need most of what they define
-# and you can do the (usually few) overrides you need in your local build.sh, or some other file that this can
-# import (eg, _common-local.sh). 
+#
+# WARNING: probably, you DON'T want to override files like _common.sh, since you will need most of what they define
+# and you can do the (usually few) overrides you need in your local build.sh, or some other locally-sourced file 
+# (eg, _common-local.sh). 
 
-set -e
+set -eE -o pipefail
 
 # Since this is executed locally, from a clone of your repo, and on a GHA runner, it needs to know
 # where our repo is, so that it can download CI scripts from it. This is an URL like
