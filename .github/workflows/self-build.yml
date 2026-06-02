@@ -74,4 +74,4 @@ jobs:
       # As per documentation, the framework client defines this script in the desired flavour directory,
       # the script downloads/runs the installation script and then starts the build.
       run: 
-        ./ci-build-v2/python-poetry/build.sh
+        ./ci-build-v2/self-build/build.sh
