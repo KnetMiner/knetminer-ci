@@ -436,7 +436,7 @@ function validate_preconditions
 }
 
 
-# As said above, this run a stage named like name=$1, by calling stage_$name_local(), 
+# As said above, this runs a stage named like name=$1, by calling stage_$name_local(), 
 # if it exists, stage_${name}() otherwise. As explained, stage_${name}() is usually
 # implemented by a particular flavour of this common scripts project.
 # 
