@@ -289,7 +289,7 @@ You CAN'T get GIT_PASSWORD from:
 
 you can add this to the above definition in the env section of your Action workflow:
 
-  ACT_GIT_PASSWORD: ${{secrets.ACT_GIT_PASSWORD}}
+  ACT_GIT_PASSWORD: \${{secrets.ACT_GIT_PASSWORD}}
 
 and define ACT_GIT_PASSWORD in the secrets file you pass to the act tool. Usually, this
 is a GH personal access token (PAT).
