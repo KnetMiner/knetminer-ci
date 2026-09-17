@@ -71,7 +71,7 @@ function install
 		file_path="$file_path/$file_relative_path"
 		[[ ! -e "$file_path" ]] || continue;
 				
-		url="$url_base/$file_relative_path"
+		url="$url_base/ci-build-v2/$file_relative_path"
 		dir_path="$(dirname "${file_path}")"
 		
 		printf "= Downloading '%s' to '%s'\n" "$url" "${file_path}"
