@@ -1,0 +1,4 @@
+# Foo Download Page
+
+* [RDF Neo Client](${RDF2NEO_CLI_STABLE_URL})
+* [RDF Neo Client, Dev Release](${RDF2NEO_CLI_SNAP_URL})

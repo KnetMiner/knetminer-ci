@@ -32,7 +32,9 @@ flavour="$2"
 function install_java_maven
 {
 	url_base="$1"
-	install "java-maven" "$url_base" "_common.sh" "java-maven/_common.sh" "java-maven/maven-settings.xml"
+	install "java-maven" "$url_base" "_common.sh" \
+	  "java-maven/_common.sh" "java-maven/maven-settings.xml" \
+	  "java-maven/download-page-utils/download-page-utils.sh"
 }
 
 function install_python_poetry
@@ -45,7 +47,7 @@ function install_python_poetry
 
 function install
 {
-	# Syntax: install_and_import <flavour> <url-base> <file> <file> ...
+	# Syntax: install <flavour> <url-base> <file> <file> ...
 	#
 	# flavour is a supported flavour name, eg, java-maven, python-poetry. This corresponds to 
 	# one of the subdirectories in ci-build-v2/
