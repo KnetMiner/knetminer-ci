@@ -62,16 +62,16 @@ function install
 	url_base="$2"
 	printf "\n== Downloading from URL base '%s'\n\n" "$url_base"
 
-	file_local_paths=("${@:3}")
+	file_relative_paths=("${@:3}")
 
 	# Relative to the <git root>/ci-build-v2
-	for file_local_path in "${file_local_paths[@]}"
+	for file_relative_path in "${file_relative_paths[@]}"
 	do
-		file_local_path="ci-build-v2/$file_local_path"
-		[[ ! -e "$file_local_path" ]] || continue;
+		file_path="$(realpath ci-build-v2)"
+		file_path="$file_path/$file_relative_path"
+		[[ ! -e "$file_path" ]] || continue;
 				
-		url="$url_base/${file_local_path}"
-		file_path="$(realpath "${file_local_path}")"		
+		url="$url_base/$file_relative_path"
 		dir_path="$(dirname "${file_path}")"
 		
 		printf "= Downloading '%s' to '%s'\n" "$url" "${file_path}"
