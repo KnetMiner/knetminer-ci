@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+
+# Scripts to Get download URLs for Maven artifacts and update download pages
+# 
+# WARNING: require xmllint (from libxml2)
+#
+
 set -e -o pipefail
 
 # Fetches a maven-metadata.xml document from the given URL and evaluates an XPath expression
