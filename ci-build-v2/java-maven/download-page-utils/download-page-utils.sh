@@ -147,7 +147,7 @@ function needs_update
 
 
 # Manages a Maven local installation update, by first checking if an update is needed (using needs_update()) 
-# and then performing the update if needed.
+# and then performing the update if needed. This works ONLY with zip files on a Maven repository.
 # 
 # If a successful update is performed, updates the tracking file with the new version.
 #
@@ -157,7 +157,7 @@ function needs_update
 # This is up to the invoker of this function.
 # Similarly, $target_dir must be writeable by this function.
 #
-function manage_update
+function manage_zip_update
 {
 	track_file="$1" # The version tracking file
 	package_dir="$2" # The root inside the package distro archive (eg, my-util)
@@ -166,21 +166,21 @@ function manage_update
 	url_base="$4"
 	group_id="$5"
 	artifact_id="$6"
-	extension="${7:-zip}"
-	want_stable_release="${8:-false}"
+	want_stable_release="${7:-false}"
 
 	needs_update \
-	  "$track_file" "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release" \
+	  "$track_file" "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release" \
 	|| return 1
 
-	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release")"
-	distro_path="$(mktemp /tmp/_ci-build-v2-pkg-XXXX.$extension)"
+	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release")"
+	distro_path="$(mktemp /tmp/_ci-build-v2-pkg-XXXX)"
 
-  cd /tmp
+  pushd /tmp
   rm -Rf "$distro_path"
 	curl -L -o "$distro_path" "$download_url"
   rm -Rf "$package_dir"
   unzip "$distro_path"
+	popd # Goes back to where we were, just in case
   
   # This is to delete the target dir contents, without removing the dir itself
   # That's necessary in order to keep the target Unix membership and its 
@@ -190,6 +190,10 @@ function manage_update
   
   # Similarly, copies the package contents into the existing container
   cp --recursive --no-dereference --preserve=timestamps "$package_dir/." "$target_dir"
-  rm -Rf $package_dir
+  rm -Rf "/tmp/$package_dir"
+
+	# Eventually, get the new version again and update the tracking file
+	new_version="$(get_latest_version_from_maven "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release")"
+	echo "$new_version" > "$track_file"
 	return 0
 }
