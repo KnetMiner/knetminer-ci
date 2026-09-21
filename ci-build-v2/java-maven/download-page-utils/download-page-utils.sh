@@ -118,3 +118,78 @@ function make_download_page
 	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release")"
 	sed "s|\${$placeholder}|$download_url|g"
 }
+
+
+# Checks if a Maven package installed locally needs to be updated, based on the latest deployment version
+# saved in a local tracking file and the latest version available in the Maven repository 
+# (using get_latest_version_from_maven()).
+#
+# Exit with 0 status if an update is needed, 1 otherwise.
+function needs_update
+{
+	track_file="$1"
+	url_base="$2"
+	group_id="$3"
+	artifact_id="$4"
+	extension="${5:-zip}"
+	want_stable_release="${6:-false}"
+
+	latest_version="$(get_latest_version_from_maven "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release")"
+	if [[ ! -f "$track_file" ]]; then
+		return 0
+	fi
+	installed_version="$(cat "$track_file")"
+	if [[ "$installed_version" != "$latest_version" ]]; then
+		return 0
+	fi
+	return 1
+}
+
+
+# Manages a Maven local installation update, by first checking if an update is needed (using needs_update()) 
+# and then performing the update if needed.
+# 
+# If a successful update is performed, updates the tracking file with the new version.
+#
+# Return 0 if an update was performed, 1 if no update was needed, 2 if an error occurred.
+#
+# WARNING: this doesn't do anything about permissions/ownership of the files at $target_dir
+# This is up to the invoker of this function.
+# Similarly, $target_dir must be writeable by this function.
+#
+function manage_update
+{
+	track_file="$1" # The version tracking file
+	package_dir="$2" # The root inside the package distro archive (eg, my-util)
+	target_dir="$3" # Where to deploy the package
+	# These are the same as in needs_update() and get_download_url_from_maven()
+	url_base="$4"
+	group_id="$5"
+	artifact_id="$6"
+	extension="${7:-zip}"
+	want_stable_release="${8:-false}"
+
+	needs_update \
+	  "$track_file" "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release" \
+	|| return 1
+
+	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "$extension" "$want_stable_release")"
+	distro_path="$(mktemp /tmp/_ci-build-v2-pkg-XXXX.$extension)"
+
+  cd /tmp
+  rm -Rf "$distro_path"
+	curl -L -o "$distro_path" "$download_url"
+  rm -Rf "$package_dir"
+  unzip "$distro_path"
+  
+  # This is to delete the target dir contents, without removing the dir itself
+  # That's necessary in order to keep the target Unix membership and its 
+  # GID settings, which, in turn is necessary to keep write permissions for 
+  # our users
+  find "$target_dir" -mindepth 1 -delete
+  
+  # Similarly, copies the package contents into the existing container
+  cp --recursive --no-dereference --preserve=timestamps "$package_dir/." "$target_dir"
+  rm -Rf $package_dir
+	return 0
+}
