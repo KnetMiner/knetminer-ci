@@ -124,7 +124,8 @@ function make_download_page
 # saved in a local tracking file and the latest version available in the Maven repository 
 # (using get_latest_version_from_maven()).
 #
-# Exit with 0 status if an update is needed, 1 otherwise.
+# Exit with 0 status if an update is needed, 3 if not. The latter allows you to treat
+# other exit codes as errors.
 function needs_update
 {
 	track_file="$1"
@@ -142,7 +143,7 @@ function needs_update
 	if [[ "$installed_version" != "$latest_version" ]]; then
 		return 0
 	fi
-	return 1
+	return 3
 }
 
 
@@ -151,7 +152,7 @@ function needs_update
 # 
 # If a successful update is performed, updates the tracking file with the new version.
 #
-# Return 0 if an update was performed, 1 if no update was needed, 2 if an error occurred.
+# Return 0 if an update was performed, 3 if no update was needed, anything else if an error occurred.
 #
 # WARNING: this doesn't do anything about permissions/ownership of the files at $target_dir
 # This is up to the invoker of this function.
@@ -170,7 +171,7 @@ function manage_zip_update
 
 	needs_update \
 	  "$track_file" "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release" \
-	|| return 1
+	&& [[ $? == 0 ]] || return 3
 
 	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release")"
 	distro_path="$(mktemp /tmp/_ci-build-v2-pkg-XXXX)"
