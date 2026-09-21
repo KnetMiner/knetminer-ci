@@ -7,11 +7,7 @@
 name: CI Framework Build
 
 on:
-  # push:
-  # As said in ci-build-v2/self-build/README.md, we don't to run this at every push at the moment, 
-  # Since the only automation we have is about (manual) releasing.
-  #
-    
+  push:    
   workflow_dispatch:
     inputs:
       # These can be set when the build is invoked manually, from GH Actions.
