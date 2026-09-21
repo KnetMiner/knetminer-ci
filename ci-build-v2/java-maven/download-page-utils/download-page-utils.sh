@@ -170,19 +170,24 @@ function manage_zip_update
 	want_stable_release="${7:-false}"
 
 	needs_update \
-	  "$track_file" "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release" \
-	&& [[ $? == 0 ]] || return 3
+	  "$track_file" "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release"
+	
+	needs_update_exit_code=$?
+	[[ $needs_update_exit_code == 3 ]] && return 3
+	if [[ $needs_update_exit_code != 0 ]]; then
+		printf "  Error in needs_update(), stopping\n"
+		return $needs_update_exit_code
+	fi
 
 	download_url="$(get_download_url_from_maven "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release")"
 	distro_path="$(mktemp /tmp/_ci-build-v2-pkg-XXXX)"
 
   pushd /tmp
   rm -Rf "$distro_path"
-	curl -L -o "$distro_path" "$download_url"
+	curl --fail -L -o "$distro_path" "$download_url"
   rm -Rf "$package_dir"
   unzip "$distro_path"
-	popd # Goes back to where we were, just in case
-  
+
   # This is to delete the target dir contents, without removing the dir itself
   # That's necessary in order to keep the target Unix membership and its 
   # GID settings, which, in turn is necessary to keep write permissions for 
@@ -190,8 +195,12 @@ function manage_zip_update
   find "$target_dir" -mindepth 1 -delete
   
   # Similarly, copies the package contents into the existing container
-  cp --recursive --no-dereference --preserve=timestamps "$package_dir/." "$target_dir"
+	# Linux only
+  # cp --recursive --no-dereference --preserve=timestamps "$package_dir/." "$target_dir"
+	# -R is --recursive and implies --no-dereference, -p preserves timestamps and other attributes
+	cp -R -p "$package_dir/." "$target_dir"
   rm -Rf "/tmp/$package_dir"
+	popd # Goes back to where we were, just in case
 
 	# Eventually, get the new version again and update the tracking file
 	new_version="$(get_latest_version_from_maven "$url_base" "$group_id" "$artifact_id" "zip" "$want_stable_release")"
