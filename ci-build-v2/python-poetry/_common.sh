@@ -50,6 +50,9 @@ function stage_release
 	printf "== Publishing on PyPI\n"
 	# This relies on POETRY_PYPI_TOKEN_PYPI defined in the secrets, user/password is now prohibited by PyPI,
 	# and for good reasons.
+	# TODO: In 2026, this isn't good enough anymore, you need attestations, combining poetry
+	# build, signing and twine upload (https://share.google/aimode/4ND1aLH2iwSJO2WKN.
+	# Without this, pypi shows that the release files have no proveance.
 	poetry $CI_POETRY_DEFAULT_ARGS publish
 
 	printf "== Moving the project to the next version\n"
