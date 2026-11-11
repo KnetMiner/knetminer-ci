@@ -162,6 +162,7 @@ function manage_zip_update
 {
 	track_file="$1" # The version tracking file
 	package_dir="$2" # The root inside the package distro archive (eg, my-util)
+	                 # WARNING: this is never quoted, to allow for wildcard use
 	target_dir="$3" # Where to deploy the package
 	# These are the same as in needs_update() and get_download_url_from_maven()
 	url_base="$4"
@@ -185,7 +186,7 @@ function manage_zip_update
   pushd /tmp
   rm -Rf "$distro_path"
 	curl --fail -L -o "$distro_path" "$download_url"
-  rm -Rf "$package_dir"
+  rm -Rf $package_dir
   unzip "$distro_path"
 
   # This is to delete the target dir contents, without removing the dir itself
@@ -198,8 +199,8 @@ function manage_zip_update
 	# Linux only
   # cp --recursive --no-dereference --preserve=timestamps "$package_dir/." "$target_dir"
 	# -R is --recursive and implies --no-dereference, -p preserves timestamps and other attributes
-	cp -R -p "$package_dir/." "$target_dir"
-  rm -Rf "/tmp/$package_dir"
+	cp -R -p $package_dir/. "$target_dir"
+  rm -Rf /tmp/$package_dir
 	popd # Goes back to where we were, just in case
 
 	# Eventually, get the new version again and update the tracking file
